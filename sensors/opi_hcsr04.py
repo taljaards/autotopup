@@ -1,21 +1,22 @@
-# Copied from https://github.com/alaudet/hcsr04sensor
+# Copied and slightly modified from https://github.com/alaudet/hcsr04sensor
 
 """Measure the distance or depth with an HCSR04 Ultrasonic sound
-sensor and a Raspberry Pi.  Imperial and Metric measurements are available"""
+sensor and a Orange Pi.  Imperial and Metric measurements are available."""
 
 # Al Audet
 # MIT License
 from __future__ import division
 
-import time
 import math
+import time
 import warnings
-import RPi.GPIO as GPIO
+
+import OPi.GPIO as GPIO
 
 
 class Measurement(object):
-    """Create a measurement using a HC-SR04 Ultrasonic Sensor connected to 
-    the GPIO pins of a Raspberry Pi.
+    """Create a measurement using a HC-SR04 Ultrasonic Sensor connected to
+    the GPIO pins of a Orange Pi.
 
     Metric values are used by default. For imperial values use
     unit='imperial'
