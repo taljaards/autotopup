@@ -61,9 +61,7 @@ class Measurement(object):
 
         if self.unit == "imperial":
             self.temperature = (self.temperature - 32) * 0.5556
-        elif self.unit == "metric":
-            pass
-        else:
+        elif self.unit != "metric":
             raise ValueError("Wrong Unit Type. Unit Must be imperial or metric")
 
         speed_of_sound = 331.3 * math.sqrt(1 + (self.temperature / 273.15))
@@ -74,7 +72,7 @@ class Measurement(object):
         GPIO.setup(self.trig_pin, GPIO.OUT)
         GPIO.setup(self.echo_pin, GPIO.IN)
 
-        for distance_reading in range(sample_size):
+        for _ in range(sample_size):
             GPIO.output(self.trig_pin, GPIO.LOW)
             time.sleep(sample_wait)
             GPIO.output(self.trig_pin, True)
@@ -82,11 +80,10 @@ class Measurement(object):
             GPIO.output(self.trig_pin, False)
             echo_status_counter = 1
             while GPIO.input(self.echo_pin) == 0:
-                if echo_status_counter < 1000:
-                    sonar_signal_off = time.time()
-                    echo_status_counter += 1
-                else:
+                if echo_status_counter >= 1000:
                     raise SystemError("Echo pulse was not received")
+                sonar_signal_off = time.time()
+                echo_status_counter += 1
             while GPIO.input(self.echo_pin) == 1:
                 sonar_signal_on = time.time()
             time_passed = sonar_signal_on - sonar_signal_off
@@ -108,12 +105,7 @@ class Measurement(object):
 
     def distance(self, median_reading):
         """Calculate the distance from the sensor to an object."""
-        if self.unit == "imperial":
-            return median_reading * 0.394
-        else:
-            # don't need this method if using metric. Use raw_distance
-            # instead.  But it will return median_reading anyway if used.
-            return median_reading
+        return median_reading * 0.394 if self.unit == "imperial" else median_reading
 
     def cylinder_volume_side(self, depth, length, radius):
         """Calculate the liquid volume of a cylinder on its side"""
@@ -127,28 +119,19 @@ class Measurement(object):
             (radius * radius * math.acos((radius - depth) / radius))
             - (radius - depth) * math.sqrt((2 * depth * radius) - (depth * depth))
         )
-        if self.unit == "metric":
-            return volume / 1000
-        else:
-            return volume / 231
+        return volume / 1000 if self.unit == "metric" else volume / 231
 
     def cylinder_volume_standing(self, depth, radius):
         """Calculate the liquid volume of a standing cylinder"""
 
         volume = self.pi * radius * radius * depth
-        if self.unit == "metric":
-            return volume / 1000
-        else:
-            return volume / 231
+        return volume / 1000 if self.unit == "metric" else volume / 231
 
     def elliptical_cylinder_volume(self, depth, semi_maj_axis, semi_min_axis):
         """Calculate the liquid volume of a standing elliptical cylinder"""
 
         volume = self.pi * semi_maj_axis * semi_min_axis * depth
-        if self.unit == "metric":
-            return volume / 1000
-        else:
-            return volume / 231
+        return volume / 1000 if self.unit == "metric" else volume / 231
 
     def elliptical_side_cylinder_volume(self, depth, height, width, length):
         """Calculate the liquid volume of an elliptical cylinder on its side"""
@@ -167,19 +150,13 @@ class Measurement(object):
             )
         )
 
-        if self.unit == "metric":
-            return volume / 1000
-        else:
-            return volume / 231
+        return volume / 1000 if self.unit == "metric" else volume / 231
 
     def cuboid_volume(self, depth, width, length):
         """Calculate amount of liquid in a cuboid
         (square or rectangle shaped container)"""
         volume = width * length * depth
-        if self.unit == "metric":
-            return volume / 1000
-        else:
-            return volume / 231
+        return volume / 1000 if self.unit == "metric" else volume / 231
 
     @staticmethod
     def basic_distance(trig_pin, echo_pin, celsius=20):
@@ -196,11 +173,10 @@ class Measurement(object):
         GPIO.output(trig_pin, False)
         echo_status_counter = 1
         while GPIO.input(echo_pin) == 0:
-            if echo_status_counter < 1000:
-                sonar_signal_off = time.time()
-                echo_status_counter += 1
-            else:
+            if echo_status_counter >= 1000:
                 raise SystemError("Echo pulse was not received")
+            sonar_signal_off = time.time()
+            echo_status_counter += 1
         while GPIO.input(echo_pin) == 1:
             sonar_signal_on = time.time()
 
